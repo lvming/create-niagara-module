@@ -1,0 +1,107 @@
+import groovy.xml.MarkupBuilder
+
+apply plugin: "java"
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+sourceSets {
+  main {
+    java {
+      srcDir "src"
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+  flatDir {
+    dirs "${System.getenv("niagara_ax_home")}/bin"
+    dirs "${System.getenv("niagara_ax_home")}/bin/ext"
+    dirs "${System.getenv("niagara_ax_home")}/modules"
+  }
+}
+
+configurations {
+  uberjar
+}
+
+dependencies {
+  compile configurations.uberjar
+}
+
+task generateModuleXml {
+  description 'Generate niagara module.xml file'
+  processResources.dependsOn 'generateModuleXml'
+  def moduleDirs = "${projectDir}/module-dirs.xml"
+  def moduleInclude = "${projectDir}/module-include.xml"
+  def outDir = "${buildDir}/generated-resources/META-INF"
+  def outFile = "module.xml"
+  def now = new Date()
+  inputs.property "moduleName", project.name
+  inputs.property "group", project.group
+  inputs.property "version", project.version
+  inputs.property "gitVersion", project.gitVersion
+  inputs.property "description", project.description
+  inputs.property "preferredSymbol", project.preferredSymbol
+  inputs.file moduleDirs
+  inputs.file moduleInclude
+  outputs.file "${outDir}/${outFile}"
+  doLast {
+    mkdir outDir
+    def xml = new MarkupBuilder(new IndentPrinter(new PrintWriter("${outDir}/${outFile}")))
+    xml.doubleQuotes = true
+    xml.mkp.xmlDeclaration(version: '1.0', encoding: "UTF-8")
+    xml.module(
+      name: project.name,
+      bajaVersion: "0",
+      vendor: project.group,
+      vendorVersion: project.version,
+      description: "${project.description} @[${project.gitVersion}]",
+      preferredSymbol: project.preferredSymbol,
+      buildDate: now,
+      buildMillis: now.getTime(),
+      buildHost: "unknown"
+    ) {
+      dependencies([:]) {
+        configurations.compile.dependencies.each {
+          dependency(name: it.name, vendor: it.group, vendorVersion: it.version)
+        }
+      }
+
+      mkp.yieldUnescaped "\n\n" + new File(moduleDirs).text
+      mkp.yieldUnescaped "\n" + new File(moduleInclude).text
+    }
+  }
+}
+
+
+jar {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  from('src') {
+    include 'WEB-INF/**'
+    include 'META-INF/**'
+    include '**/*.png'
+  }
+  into("") {
+    from 'module.palette'
+    from('module.lexicon') {
+      rename 'module.lexicon', "${project.name}.lexicon"
+    }
+    from "${buildDir}/generated-resources"
+  }
+
+  into("") {
+    from {
+      configurations.uberjar.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+  }
+}
+
+jar.doLast {
+  copy {
+    into { "${System.getenv("niagara_ax_home")}/modules" }
+    from archivePath
+    rename archiveName, "${baseName}.jar"
+  }
+}

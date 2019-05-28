@@ -1,0 +1,36 @@
+import groovy.io.FileType
+import groovy.io.FileVisitResult
+
+rootProject.name = "{{ module }}"
+
+def discoveredProjects = [:] as Map
+
+ext {
+  niagaraRoots = ["."]
+  excludeDirs = [".git", ".gradle", ".idea", "gradle"]
+}
+
+niagaraRoots.collect({ file(it) }).findAll({ it.exists() }).each { File projectRoot ->
+  projectRoot.traverse(
+    type: FileType.DIRECTORIES,
+    preRoot: true,
+    preDir: { File projectDir ->
+      def isAX = projectDir.name == "ax"
+      def projectName = isAX ?
+        rootProject.name :
+        rootProject.name + "-" + projectDir.name
+      if (excludeDirs.contains(projectName)) {
+        return FileVisitResult.SKIP_SUBTREE
+      }
+      def buildScript = new File(projectDir, "build.gradle")
+      if (buildScript.exists()) {
+        discoveredProjects[projectName] = projectDir
+        if (projectDir != projectRoot) {
+          include projectDir.name
+          project(":${projectDir.name}").name = projectName
+          return FileVisitResult.SKIP_SUBTREE
+        }
+      }
+    }
+  )
+}

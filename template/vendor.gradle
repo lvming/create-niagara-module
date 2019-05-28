@@ -1,0 +1,19 @@
+// Vendor name applied to all modules
+group = "{{ vendor }}"
+description = "{{ description }}"
+ext {
+  preferredSymbol = "{{ preferredSymbol }}"
+  niagaraVersion = "4.2"
+}
+
+// Major, minor, and build version
+def moduleVersion = '0.1'
+
+// Patch version can be declared
+// For example, to patch envCtrlDriver module as 5.0.1.1
+// moduleVersionPatch.envCtrlDriver = '.1'
+def moduleVersionPatch = [:]
+//moduleVersionPatch["{{ module }}-rt"] = ".0"
+
+// Final version property applied to all modules
+version = "${moduleVersion}${moduleVersionPatch.get(project.name, '')}"

@@ -1,0 +1,14 @@
+sourceSets {
+  main {
+    java {
+      srcDir "src"
+    }
+  }
+}
+
+def niagaraVersion = "3.8"
+
+dependencies {
+  compileOnly "Tridium:nre:${niagaraVersion}"
+  compile "Tridium:baja:${niagaraVersion}"
+}

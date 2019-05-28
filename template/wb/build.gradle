@@ -1,0 +1,19 @@
+niagaraModule {
+  preferredSymbol = project.preferredSymbol
+  moduleName = rootProject.name
+  runtimeProfile = project.projectDir.name
+}
+
+def niagaraVersion = ext.niagaraVersion
+
+repositories {
+  flatDir {
+    dirs "${rootProject.projectDir}/lib"
+  }
+}
+
+dependencies {
+  compile project(":${rootProject.name}-rt")
+  compile "Tridium:nre:${niagaraVersion}"
+  compile "Tridium:baja:${niagaraVersion}"
+}

@@ -1,0 +1,39 @@
+{
+  "name": "create-niagara-module",
+  "version": "0.0.1",
+  "description": "Create Niagara Module",
+  "author": "lvming",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/lvming/create-niagara-module#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lvming/create-niagara-module.git"
+  },
+  "files": [
+    "lib",
+    "template"
+  ],
+  "bin": {
+    "create-niagara-module": "lib/index.js"
+  },
+  "scripts": {
+    "lint": "eslint lib",
+    "format": "pretty-quick"
+  },
+  "dependencies": {
+    "commander": "^2.20.0",
+    "cpy": "^7.3.0",
+    "inquirer": "^6.3.1",
+    "lodash.difference": "^4.5.0",
+    "template-dir": "^2.0.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^7.5.0",
+    "@commitlint/config-conventional": "^7.5.0",
+    "@commitlint/prompt-cli": "^7.5.0",
+    "eslint": "^5.16.0",
+    "husky": "^2.3.0",
+    "prettier": "^1.17.0",
+    "pretty-quick": "^1.10.0"
+  }
+}

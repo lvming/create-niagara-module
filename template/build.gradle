@@ -1,0 +1,34 @@
+/* Module Build File */
+ext {
+  niagaraHome = System.getenv("niagara_home")
+  if (niagaraHome == null) {
+    logger.error('niagara_home environment variable not set')
+  } else {
+    logger.quiet("niagaraHome is ${niagaraHome}")
+  }
+  niagaraAxHome = System.getenv("niagara_ax_home")
+  if (niagaraAxHome == null) {
+    logger.error('niagara_ax_home environment variable not set')
+  } else {
+    logger.quiet("niagaraAxHome is ${niagaraAxHome}")
+  }
+  gitVersion = "git describe --tags --long --always --dirty".execute(null, rootDir).text.trim() ?: "unknown"
+  logger.quiet("gitVersion is ${gitVersion}")
+}
+
+gradle.beforeProject { project ->
+  configure(project) {
+    def vendorSettings = file("${rootDir}/vendor.gradle")
+    if (vendorSettings.exists()) {
+      apply from: vendorSettings
+    }
+    def isAX = project.name == rootProject.name
+    if (isAX) {
+      apply from: "${rootDir}/nax.gradle"
+    } else {
+      apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+    }
+    apply from: "${rootDir}/extra.gradle"
+    apply from: "${rootDir}/proguard.gradle"
+  }
+}

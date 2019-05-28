@@ -1,0 +1,30 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "net.sf.proguard:proguard-gradle:6.0.3"
+  }
+}
+
+configurations {
+  proguard
+}
+
+task proguard(type: proguard.gradle.ProGuardTask, dependsOn: build) {
+  def out = jar.archivePath.toString().replaceAll(/\.jar$/, "-proguard.jar")
+  inputs.file jar.archivePath
+  outputs.file out
+  configuration "${rootDir}/proguard.pro"
+  injars jar.archivePath
+  outjars out
+  libraryjars "${System.getProperty("java.home")}/lib/rt.jar"
+  libraryjars configurations.compile
+  libraryjars configurations.proguard
+}
+task deployProguard(type: Copy, dependsOn: proguard) {
+  def path = jar.archivePath.toString().replaceAll(/\.jar$/, "-proguard.jar")
+  into { "${System.getenv("niagara_home")}/modules" }
+  from path
+  rename jar.archiveName.replaceAll(/\.jar$/, "-proguard.jar"), "${jar.baseName}.jar"
+}

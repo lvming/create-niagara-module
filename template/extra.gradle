@@ -1,0 +1,46 @@
+apply plugin: "idea"
+idea {
+  module {
+    testSourceDirs += file('srcTest')
+  }
+}
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+  options.compilerArgs = [
+    "-Xlint:all",
+    "-Xlint:-options",
+    "-Xlint:-serial",
+    "-Xlint:-overrides",
+  ]
+}
+
+jar {
+  from('src') {
+    include 'WEB-INF/**'
+    include 'META-INF/**'
+  }
+}
+
+configurations {
+  uberjarSources
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = "sources"
+  from sourceSets.main.allSource
+  from {
+    configurations.uberjarSources.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+
+  doLast {
+    def isAX = project.name == rootProject.name
+    copy {
+      into { "${isAX ? niagaraAxHome : niagaraHome}/modules" }
+      from archivePath
+      rename archiveName, "${baseName}-sources.jar"
+    }
+  }
+}
+
+assemble.dependsOn "sourcesJar"
