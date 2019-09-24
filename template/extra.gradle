@@ -44,3 +44,24 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 }
 
 assemble.dependsOn "sourcesJar"
+
+task signJar(dependsOn: "jar", group: "build") {
+  def jarFile = "${niagaraHome}/modules/${jar.baseName}.jar"
+  doLast {
+    if (hasProperty("N4_KEYSTORE")) {
+      ant.signjar(
+        jar: jarFile,
+        keystore: N4_KEYSTORE,
+        storetype: N4_STORETYPE,
+        alias: N4_ALIAS,
+        storepass: N4_STOREPASS,
+        keypass: N4_KEYPASS,
+        tsaurl: "http://timestamp.digicert.com",
+        verbose: true,
+        preservelastmodified: true,
+      )
+    }
+  }
+}
+
+assemble.dependsOn "signJar"
