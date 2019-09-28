@@ -28,13 +28,14 @@ configurations {
 
 task sourcesJar(type: Jar, dependsOn: classes) {
   classifier = "sources"
+  baseName rootProject.name
   from sourceSets.main.allSource
   from {
     configurations.uberjarSources.collect { it.isDirectory() ? it : zipTree(it) }
   }
 
   doLast {
-    def isAX = project.name == rootProject.name
+    def isAX = project.name.endsWith("-ax")
     copy {
       into { "${isAX ? niagaraAxHome : niagaraHome}/modules" }
       from archivePath
@@ -47,8 +48,12 @@ assemble.dependsOn "sourcesJar"
 
 task signJar(dependsOn: "jar", group: "build") {
   def jarFile = "${niagaraHome}/modules/${jar.baseName}.jar"
+  outputs.cacheIf { true }
+  outputs.upToDateWhen {
+    new File(jarFile).lastModified() - jar.archivePath.lastModified() > 1000
+  }
   doLast {
-    if (hasProperty("N4_KEYSTORE")) {
+    if (!project.name.endsWith("-ax")) {
       ant.signjar(
         jar: jarFile,
         keystore: N4_KEYSTORE,
@@ -58,7 +63,7 @@ task signJar(dependsOn: "jar", group: "build") {
         keypass: N4_KEYPASS,
         tsaurl: "http://timestamp.digicert.com",
         verbose: true,
-        preservelastmodified: true,
+        // preservelastmodified: true,
       )
     }
   }

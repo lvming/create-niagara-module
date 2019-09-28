@@ -22,8 +22,7 @@ gradle.beforeProject { project ->
     if (vendorSettings.exists()) {
       apply from: vendorSettings
     }
-    def isAX = project.name == rootProject.name
-    if (isAX) {
+    if (project.name.endsWith("-ax")) {
       apply from: "${rootDir}/nax.gradle"
     } else {
       apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"

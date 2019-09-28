@@ -78,6 +78,7 @@ task generateModuleXml {
 
 jar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  baseName rootProject.name
   from('src') {
     include 'WEB-INF/**'
     include 'META-INF/**'
